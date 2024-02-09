@@ -15,5 +15,5 @@ npm i
 TODO
 
 ```shell
-npm run start
+npm run grab
 ```

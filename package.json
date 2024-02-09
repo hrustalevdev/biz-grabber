@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "rm -rf ./dist && tsc",
-    "run": "npm run build -s && node dist"
+    "grab": "npm run build -s && node dist"
   },
   "repository": {
     "type": "git",
