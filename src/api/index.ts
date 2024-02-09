@@ -1,0 +1,1 @@
+export { dadataApi } from './datata';
