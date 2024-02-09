@@ -1,24 +1,42 @@
 import * as Excel from 'exceljs';
+import fs from 'fs';
+import path from 'path';
 import ProgressBar from 'progress';
 
 import { dadataApi } from './api';
 
 export class BizGrabber {
-  private readonly output: string;
+  private readonly input: string;
 
-  constructor(output: string) {
-    this.output = output;
+  constructor(input: string) {
+    this.input = this.prepareInputFilePath(input);
   }
 
-  static async grab(output: string) {
-    const grabber = new this(output);
+  static async grab(input: string) {
+    const grabber = new this(input);
     await grabber.grab();
   }
 
   async grab() {
+    const INNs = await this.getINNs();
+
+    const dadata = [];
+
+    const process = this.processLog(INNs.length);
+
+    for (const inn of INNs) {
+      const [data] = await dadataApi.suggest.party({ query: inn, count: 1 });
+      // TODO: тут сразу сохраняем в excel
+      dadata.push(data);
+      process.tick();
+    }
+  }
+
+  private async getINNs() {
     const workbook = new Excel.Workbook();
-    await workbook.xlsx.readFile(this.output);
+    await workbook.xlsx.readFile(this.input);
     const worksheet = workbook.worksheets[0];
+
     worksheet.columns = [
       { key: 'opf', header: 'OPF' },
       { key: 'fio', header: 'FIO' },
@@ -26,6 +44,7 @@ export class BizGrabber {
       { key: 'inn', header: 'INN' },
       { key: 'city', header: 'CITY' },
     ];
+
     const innCol = worksheet.getColumn('inn');
     const INNs: string[] = [];
 
@@ -36,15 +55,14 @@ export class BizGrabber {
       INNs.push(String(inn.value));
     });
 
-    const dadata = [];
+    return INNs;
+  }
 
-    const process = this.processLog(INNs.length);
+  /** Возвращает путь до первого файла в папке. */
+  private prepareInputFilePath(input: string) {
+    const [fileName] = fs.readdirSync(input);
 
-    for (const inn of INNs) {
-      const [data] = await dadataApi.suggest.party({ query: inn, count: 1 });
-      dadata.push(data);
-      process.tick();
-    }
+    return path.resolve(input, fileName);
   }
 
   private processLog(total: number) {
