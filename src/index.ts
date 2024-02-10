@@ -8,4 +8,9 @@ const input =
     path.resolve(__dirname, '..', 'input', 'test')
   : path.resolve(__dirname, '..', 'input');
 
-BizGrabber.grab(input);
+const output =
+  isTesting ?
+    path.resolve(__dirname, '..', 'output', 'test')
+  : path.resolve(__dirname, '..', 'output');
+
+BizGrabber.grab(input, output);
