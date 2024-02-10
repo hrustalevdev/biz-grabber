@@ -143,23 +143,25 @@ class BizGrabber {
         };
     }
     prepareInputFilePath(input) {
+        const file = this.getFirstXlsxFile(input);
+        return path_1.default.resolve(input, file.name);
+    }
+    prepareOutputFilePath(input, output) {
+        const inputFile = this.getFirstXlsxFile(input);
+        const currentDate = new Date()
+            .toISOString()
+            .slice(0, 10)
+            .replace(/-/g, '-');
+        const newFileName = `biz-grabber_${currentDate}_${inputFile.name}`;
+        return path_1.default.resolve(output, newFileName);
+    }
+    getFirstXlsxFile(input) {
         const content = (0, node_fs_1.readdirSync)(input, { withFileTypes: true });
         const file = content.find((c) => c.isFile());
         if (!file || path_1.default.extname(file.name) !== '.xlsx') {
             throw new Error('Не найден файл с расширением ".xlsx" в папке "input".');
         }
-        return path_1.default.resolve(input, file.name);
-    }
-    prepareOutputFilePath(input, output) {
-        const [fileName] = (0, node_fs_1.readdirSync)(input);
-        const fileExt = path_1.default.extname(fileName);
-        const rawFileName = path_1.default.basename(fileName, fileExt);
-        const currentDate = new Date()
-            .toISOString()
-            .slice(0, 10)
-            .replace(/-/g, '-');
-        const newFileName = `biz-grabber_${currentDate}_${rawFileName}${fileExt}`;
-        return path_1.default.resolve(output, newFileName);
+        return file;
     }
     prepareOutputFolder(outputFolder) {
         try {

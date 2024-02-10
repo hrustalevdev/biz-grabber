@@ -155,32 +155,34 @@ export class BizGrabber {
 
   /** Возвращает путь до первого файла в папке. */
   private prepareInputFilePath(input: string) {
-    const content = readdirSync(input, { withFileTypes: true });
+    const file = this.getFirstXlsxFile(input);
+    return path.resolve(input, file.name);
+  }
 
+  /** Возвращает путь на основе исходного файла. */
+  private prepareOutputFilePath(input: string, output: string) {
+    const inputFile = this.getFirstXlsxFile(input);
+
+    const currentDate = new Date()
+      .toISOString()
+      .slice(0, 10)
+      .replace(/-/g, '-');
+
+    const newFileName = `biz-grabber_${currentDate}_${inputFile.name}`;
+
+    return path.resolve(output, newFileName);
+  }
+
+  /** Возвращает первый `.xlsx` файл из папки, либо выбрасывает исключение. */
+  private getFirstXlsxFile(input: string) {
+    const content = readdirSync(input, { withFileTypes: true });
     const file = content.find((c) => c.isFile());
 
     if (!file || path.extname(file.name) !== '.xlsx') {
       throw new Error('Не найден файл с расширением ".xlsx" в папке "input".');
     }
 
-    return path.resolve(input, file.name);
-  }
-
-  /** Возвращает путь на основе исходного файла. */
-  private prepareOutputFilePath(input: string, output: string) {
-    const [fileName] = readdirSync(input);
-    const fileExt = path.extname(fileName);
-
-    /** Имя файля без расширения. */
-    const rawFileName = path.basename(fileName, fileExt);
-    const currentDate = new Date()
-      .toISOString()
-      .slice(0, 10)
-      .replace(/-/g, '-');
-
-    const newFileName = `biz-grabber_${currentDate}_${rawFileName}${fileExt}`;
-
-    return path.resolve(output, newFileName);
+    return file;
   }
 
   private prepareOutputFolder(outputFolder: string) {
