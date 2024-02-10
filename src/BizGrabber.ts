@@ -8,15 +8,18 @@ import { dadataApi } from './api';
 export class BizGrabber {
   private readonly input: string;
   private readonly output: string;
+  private readonly grabSize: number;
 
   /**
    * @param input - путь к папке с исходными данными
    * @param output - путь к папке с результатом
+   * @param grabSize - количество одновременных запросов
    */
-  constructor(input: string, output: string) {
+  constructor(input: string, output: string, grabSize = 100) {
+    this.prepareOutputFolder(output);
     this.input = this.prepareInputFilePath(input);
     this.output = this.prepareOutputFilePath(input, output);
-    this.prepareOutputFolder(output);
+    this.grabSize = grabSize;
   }
 
   /**
@@ -33,10 +36,18 @@ export class BizGrabber {
     const process = this.processLog(INNs.length);
     const { table, onDataInserted } = this.useResultTable();
 
-    for (const inn of INNs) {
-      const { name, status } = await this.fetchOrganizationDataByInn(inn);
-      const row = [name, inn, status];
-      table.addRow(row);
+    for (let i = 0; i < INNs.length; i += this.grabSize) {
+      const chunkIds = INNs.slice(i, i + this.grabSize);
+
+      const promises = chunkIds.map((inn) =>
+        this.fetchOrganizationDataByInn(inn),
+      );
+
+      const rows = await Promise.all(promises);
+
+      rows.forEach((r) => {
+        table.addRow([r.name, r.inn, r.status]);
+      });
 
       process.tick();
     }
@@ -174,15 +185,19 @@ export class BizGrabber {
     }
   }
 
-  private processLog(total: number) {
+  private processLog(totalRecords: number) {
+    const total = Math.ceil(totalRecords / this.grabSize);
+
     console.log('Start grabbing...');
-    console.log(`Total grabs: ${total}`);
+    console.log(`Total records    : ${totalRecords}`);
+    console.log(`Grab size        : ${this.grabSize}`);
+    console.log(`Total grabs      : ${total}`);
 
     return new ProgressBar(
       `Grabbing process : [:bar] :current/:total :percent :etas :elapseds`,
       {
         complete: '=',
-        incomplete: ' ',
+        incomplete: '-',
         width: 30,
         total,
       },
