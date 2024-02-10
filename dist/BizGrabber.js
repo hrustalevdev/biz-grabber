@@ -32,6 +32,7 @@ const node_fs_1 = require("node:fs");
 const path_1 = __importDefault(require("path"));
 const progress_1 = __importDefault(require("progress"));
 const api_1 = require("./api");
+const withRetryRequest_1 = require("./lib/withRetryRequest");
 class BizGrabber {
     input;
     output;
@@ -52,7 +53,7 @@ class BizGrabber {
         const { table, onDataInserted } = this.useResultTable();
         for (let i = 0; i < INNs.length; i += this.grabSize) {
             const chunkIds = INNs.slice(i, i + this.grabSize);
-            const promises = chunkIds.map((inn) => this.fetchOrganizationDataByInn(inn));
+            const promises = chunkIds.map((inn) => (0, withRetryRequest_1.withRetryRequest)(this.fetchOrganizationDataByInn)(inn));
             const rows = await Promise.all(promises);
             rows.forEach((r) => {
                 table.addRow([r.name, r.inn, r.status]);

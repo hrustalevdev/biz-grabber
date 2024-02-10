@@ -4,6 +4,7 @@ import path from 'path';
 import ProgressBar from 'progress';
 
 import { dadataApi } from './api';
+import { withRetryRequest } from './lib/withRetryRequest';
 
 export class BizGrabber {
   private readonly input: string;
@@ -41,7 +42,7 @@ export class BizGrabber {
       const chunkIds = INNs.slice(i, i + this.grabSize);
 
       const promises = chunkIds.map((inn) =>
-        this.fetchOrganizationDataByInn(inn),
+        withRetryRequest(this.fetchOrganizationDataByInn)(inn),
       );
 
       const rows = await Promise.all(promises);
