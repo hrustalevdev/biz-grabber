@@ -1,7 +1,7 @@
 import path from 'path';
 
 import { BizGrabber } from './BizGrabber';
-import { isTesting } from './lib/env';
+import { isTesting, grabSize } from './lib/env';
 
 const input =
   isTesting ?
@@ -13,4 +13,4 @@ const output =
     path.resolve(__dirname, '..', 'output', 'test')
   : path.resolve(__dirname, '..', 'output');
 
-BizGrabber.grab(input, output);
+BizGrabber.grab(input, output, grabSize);

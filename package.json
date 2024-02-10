@@ -5,8 +5,9 @@
   "main": "index.js",
   "scripts": {
     "build": "rm -rf ./dist && tsc",
-    "grab": "npm run build -s && npm run clean:output -s && node dist",
-    "grab:test": "npm run build -s && npm run clean:output:test -s && NODE_ENV=testing node dist",
+    "grab": "npm run clean:output -s && node dist",
+    "grab:dev": "npm run build -s && npm run clean:output -s && node dist",
+    "grab:dev:test": "npm run build -s && npm run clean:output:test -s && NODE_ENV=testing node dist",
     "clean:output": "rm -rf ./output",
     "clean:output:test": "rm -rf ./output/test"
   },

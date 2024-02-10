@@ -25,9 +25,10 @@ export class BizGrabber {
   /**
    * @param input - путь к папке с исходными данными
    * @param output - путь к папке с результатом
+   * @param grabSize - количество одновременных запросов
    */
-  static async grab(input: string, output: string) {
-    const grabber = new this(input, output);
+  static async grab(input: string, output: string, grabSize?: number) {
+    const grabber = new this(input, output, grabSize);
     await grabber.grab();
   }
 
