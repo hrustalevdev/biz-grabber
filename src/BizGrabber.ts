@@ -87,6 +87,16 @@ export class BizGrabber {
       rows: [],
     });
 
+    worksheet.getRow(1).alignment = {
+      vertical: 'middle',
+      horizontal: 'center',
+    };
+    worksheet.columns = [
+      { width: 40 },
+      { width: 20, style: { alignment: { horizontal: 'right' } } },
+      { width: 20, style: { alignment: { horizontal: 'right' } } },
+    ];
+
     const table = worksheet.getTable(tableName);
     const onDataInserted = async () => {
       table.commit();
