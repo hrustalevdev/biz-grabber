@@ -30,26 +30,23 @@ export class BizGrabber {
 
   async grab() {
     const INNs = await this.getINNs();
-
-    const workbook = new Excel.Workbook();
-    const worksheet = workbook.addWorksheet('biz-grabber');
-    worksheet.addRow(['name', 'inn', 'status']);
-
     const process = this.processLog(INNs.length);
+    const { table, onDataInserted } = this.useResultTable();
 
     for (const inn of INNs) {
       const [data] = await dadataApi.suggest.party({ query: inn, count: 1 });
+      const { data: organizationData } = data;
 
-      worksheet.addRow([
-        data.data.name.short_with_opf,
-        data.data.inn,
-        data.data.state.status,
+      table.addRow([
+        organizationData.name.short_with_opf,
+        organizationData.inn,
+        organizationData.state.status,
       ]);
 
       process.tick();
     }
 
-    await workbook.xlsx.writeFile(this.output);
+    await onDataInserted();
   }
 
   private async getINNs() {
@@ -76,6 +73,30 @@ export class BizGrabber {
     });
 
     return INNs;
+  }
+
+  private useResultTable() {
+    const tableName = 'BizGrabber';
+    const workbook = new Excel.Workbook();
+    const worksheet = workbook.addWorksheet('biz-grabber');
+    worksheet.addTable({
+      name: tableName,
+      ref: 'A1',
+      headerRow: true,
+      columns: [{ name: 'CompanyName' }, { name: 'INN' }, { name: 'Status' }],
+      rows: [],
+    });
+
+    const table = worksheet.getTable(tableName);
+    const onDataInserted = async () => {
+      table.commit();
+      await workbook.xlsx.writeFile(this.output);
+    };
+
+    return {
+      table,
+      onDataInserted,
+    };
   }
 
   /** Возвращает путь до первого файла в папке. */
