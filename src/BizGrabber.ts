@@ -34,14 +34,9 @@ export class BizGrabber {
     const { table, onDataInserted } = this.useResultTable();
 
     for (const inn of INNs) {
-      const [data] = await dadataApi.suggest.party({ query: inn, count: 1 });
-      const { data: organizationData } = data;
-
-      table.addRow([
-        organizationData.name.short_with_opf,
-        organizationData.inn,
-        organizationData.state.status,
-      ]);
+      const { name, status } = await this.fetchOrganizationDataByInn(inn);
+      const row = [name, inn, status];
+      table.addRow(row);
 
       process.tick();
     }
@@ -73,6 +68,42 @@ export class BizGrabber {
     });
 
     return INNs;
+  }
+
+  private async fetchOrganizationDataByInn(
+    inn: string,
+  ): Promise<{ name: string; inn: string; status: string }> {
+    const data = await dadataApi.suggest.party({ query: inn });
+
+    if (!data.length) {
+      return { name: 'no data', inn, status: 'no data' };
+    }
+
+    if (data.length === 1) {
+      const d = data[0];
+      return {
+        name: d.data.name.short_with_opf,
+        inn,
+        status: d.data.state.status,
+      };
+    }
+
+    /** Для ИП может выдать несколько данных, т.к. при повторном закрытии/открытии ИНН остаётся прежний. */
+    const d = data.find((d) => d.data.state.status === 'ACTIVE');
+    if (d) {
+      return {
+        name: d.data.name.short_with_opf,
+        inn,
+        status: d.data.state.status,
+      };
+    } else {
+      const d = data[0];
+      return {
+        name: d.data.name.short_with_opf,
+        inn,
+        status: d.data.state.status,
+      };
+    }
   }
 
   private useResultTable() {

@@ -18,12 +18,16 @@ const suggest = {
   async party(
     params: IOrganizationSuggestionsParams,
   ): Promise<IBaseOrganizationItem[]> {
-    const { data } = await httpClient.post<IBaseOrganizationSuggestions>(
-      SUGGEST_URL.href,
-      params,
-    );
+    try {
+      const { data } = await httpClient.post<IBaseOrganizationSuggestions>(
+        SUGGEST_URL.href,
+        params,
+      );
 
-    return data.suggestions || [];
+      return data.suggestions || [];
+    } catch (e) {
+      throw new Error(e as unknown as string);
+    }
   },
 };
 
