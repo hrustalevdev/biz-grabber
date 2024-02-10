@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.withRetryRequest = void 0;
 const delay_1 = require("./delay");
-function withRetryRequest(callback, maxRetries = 3, retryDelay = 500) {
+function withRetryRequest(callback, maxRetries = 3, retryDelay = 1000) {
     return async (params) => {
         let error;
         for (let retries = 0; retries < maxRetries; retries++) {
