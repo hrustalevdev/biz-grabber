@@ -143,8 +143,12 @@ class BizGrabber {
         };
     }
     prepareInputFilePath(input) {
-        const [fileName] = (0, node_fs_1.readdirSync)(input);
-        return path_1.default.resolve(input, fileName);
+        const content = (0, node_fs_1.readdirSync)(input, { withFileTypes: true });
+        const file = content.find((c) => c.isFile());
+        if (!file || path_1.default.extname(file.name) !== '.xlsx') {
+            throw new Error('Не найден файл с расширением ".xlsx" в папке "input".');
+        }
+        return path_1.default.resolve(input, file.name);
     }
     prepareOutputFilePath(input, output) {
         const [fileName] = (0, node_fs_1.readdirSync)(input);
@@ -182,3 +186,4 @@ class BizGrabber {
     }
 }
 exports.BizGrabber = BizGrabber;
+//# sourceMappingURL=BizGrabber.js.map

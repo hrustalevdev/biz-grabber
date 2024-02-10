@@ -13,3 +13,4 @@ const output = env_1.isTesting ?
     path_1.default.resolve(__dirname, '..', 'output', 'test')
     : path_1.default.resolve(__dirname, '..', 'output');
 BizGrabber_1.BizGrabber.grab(input, output, env_1.grabSize);
+//# sourceMappingURL=index.js.map

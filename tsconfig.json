@@ -39,7 +39,7 @@
     "declarationMap": false,
     "emitDeclarationOnly": false,
     //"declarationDir": "dist/types",
-    "sourceMap": false,
+    "sourceMap": true,
     "removeComments": true,
     "downlevelIteration": false,
     "newLine": "lf",

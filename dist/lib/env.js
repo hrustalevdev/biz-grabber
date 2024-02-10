@@ -6,3 +6,4 @@ const gs = process.env.GRAB_SIZE;
 exports.grabSize = !Number.isNaN(Number(gs)) && Number(gs) > 0 && Number(gs) <= 1000 ?
     Number(gs)
     : undefined;
+//# sourceMappingURL=env.js.map

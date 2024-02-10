@@ -1,0 +1,1 @@
+{"version":3,"file":"httpClient.js","sourceRoot":"","sources":["../../src/api/httpClient.ts"],"names":[],"mappings":";;;;;;AAAA,kDAA0B;AAEb,QAAA,UAAU,GAAG,eAAK,CAAC,MAAM,CAAC;IACrC,OAAO,EAAE,IAAI;IACb,YAAY,EAAE,MAAM;IACpB,OAAO,EAAE;QACP,kBAAkB,EAAE,gBAAgB;QACpC,cAAc,EAAE,kBAAkB;QAClC,MAAM,EAAE,kBAAkB;KAC3B;CACF,CAAC,CAAC"}

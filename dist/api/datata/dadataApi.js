@@ -29,3 +29,4 @@ const find = {
     },
 };
 exports.dadataApi = { suggest, find };
+//# sourceMappingURL=dadataApi.js.map

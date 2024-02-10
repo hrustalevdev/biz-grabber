@@ -155,9 +155,15 @@ export class BizGrabber {
 
   /** Возвращает путь до первого файла в папке. */
   private prepareInputFilePath(input: string) {
-    const [fileName] = readdirSync(input);
+    const content = readdirSync(input, { withFileTypes: true });
 
-    return path.resolve(input, fileName);
+    const file = content.find((c) => c.isFile());
+
+    if (!file || path.extname(file.name) !== '.xlsx') {
+      throw new Error('Не найден файл с расширением ".xlsx" в папке "input".');
+    }
+
+    return path.resolve(input, file.name);
   }
 
   /** Возвращает путь на основе исходного файла. */
