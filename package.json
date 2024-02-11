@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "release": "node release.mjs",
     "build": "rm -rf ./dist && tsc",
     "grab": "npm run clean:output -s && node dist",
     "grab:dev": "npm run build -s && npm run clean:output -s && node dist",
@@ -30,6 +31,7 @@
     "eslint-config-prettier": "^9.1.0",
     "eslint-import-resolver-typescript": "^3.6.1",
     "eslint-plugin-import": "^2.29.1",
+    "inquirer": "^9.2.14",
     "prettier": "3.2.5",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
