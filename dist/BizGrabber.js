@@ -157,11 +157,11 @@ class BizGrabber {
     }
     getFirstXlsxFile(input) {
         const content = (0, node_fs_1.readdirSync)(input, { withFileTypes: true });
-        const file = content.find((c) => c.isFile());
-        if (!file || path_1.default.extname(file.name) !== '.xlsx') {
+        const xlsxFile = content.find((c) => path_1.default.extname(c.name) === '.xlsx');
+        if (!xlsxFile) {
             throw new Error('Не найден файл с расширением ".xlsx" в папке "input".');
         }
-        return file;
+        return xlsxFile;
     }
     prepareOutputFolder(outputFolder) {
         try {

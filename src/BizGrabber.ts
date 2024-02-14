@@ -176,13 +176,13 @@ export class BizGrabber {
   /** Возвращает первый `.xlsx` файл из папки, либо выбрасывает исключение. */
   private getFirstXlsxFile(input: string) {
     const content = readdirSync(input, { withFileTypes: true });
-    const file = content.find((c) => c.isFile());
+    const xlsxFile = content.find((c) => path.extname(c.name) === '.xlsx');
 
-    if (!file || path.extname(file.name) !== '.xlsx') {
+    if (!xlsxFile) {
       throw new Error('Не найден файл с расширением ".xlsx" в папке "input".');
     }
 
-    return file;
+    return xlsxFile;
   }
 
   private prepareOutputFolder(outputFolder: string) {
