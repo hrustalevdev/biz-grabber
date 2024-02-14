@@ -1,12 +1,7 @@
 import type { IAddressItem } from './addresses';
 
 type UType = 'LEGAL' | 'INDIVIDUAL';
-type UStatus =
-  | 'ACTIVE'
-  | 'LIQUIDATING'
-  | 'LIQUIDATED'
-  | 'BANKRUPT'
-  | 'REORGANIZING';
+type UStatus = 'ACTIVE' | 'LIQUIDATING' | 'LIQUIDATED' | 'BANKRUPT' | 'REORGANIZING';
 type UBranchType = 'MAIN' | 'BRANCH';
 type UTaxSystem = 'AUSN' | 'ESHN' | 'SRP' | 'USN';
 type USmallMediumBusiness = 'MICRO' | 'SMALL' | 'MEDIUM';
@@ -196,7 +191,32 @@ interface IFullOrganizationData extends IBaseOrganizationData {
     };
   };
   licenses: Array<Record<string, unknown>>;
-  phones: Array<Record<string, unknown>>;
+  phones: Array<{
+    data?: {
+      /** Телефон одной строкой как в ЕГРЮЛ */
+      source?: string;
+      /** тип телефона (мобильный, стационарный, ...) */
+      type?: 'Мобильный';
+      /** Код страны */
+      country_code?: '7';
+      /** Код города / DEF-код */
+      city_code?: '911';
+      /** Локальный номер телефона */
+      number?: '2410309';
+      /** Оператор связи */
+      provider?: 'ПАО "Мобильные ТелеСистемы"';
+      /** Регион */
+      region?: 'Санкт-Петербург и Ленинградская область';
+      /** Город (только для стационарных телефонов) */
+      city?: null;
+      /** Часовой пояс */
+      timezone?: 'UTC+3';
+      /** Контактное лицо */
+      contact?: null;
+    };
+    unrestricted_value?: string;
+    value?: string;
+  }>;
   emails: Array<{
     data?: {
       /** Email одной строкой как в ЕГРЮЛ */
@@ -207,9 +227,9 @@ interface IFullOrganizationData extends IBaseOrganizationData {
       domain: string;
     };
     /** Email одной строкой */
-    unrestricted_value: string;
+    unrestricted_value?: string;
     /** Email одной строкой */
-    value: string;
+    value?: string;
   }>;
 
   /**

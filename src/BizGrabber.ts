@@ -4,7 +4,20 @@ import path from 'path';
 import ProgressBar from 'progress';
 
 import { dadataApi } from './api';
+import type { IFullOrganizationItem } from './api/datata/types';
 import { withRetryRequest } from './lib/withRetryRequest';
+
+interface IRowData {
+  name: string;
+  inn: string;
+  status: string;
+  emails: string;
+  phones: string;
+  address: string;
+  okved: string;
+}
+
+const NO_DATA = 'no data';
 
 export class BizGrabber {
   private readonly input: string;
@@ -16,11 +29,13 @@ export class BizGrabber {
    * @param output - путь к папке с результатом
    * @param grabSize - количество одновременных запросов
    */
-  constructor(input: string, output: string, grabSize = 100) {
+  constructor(input: string, output: string, grabSize = 30) {
     this.prepareOutputFolder(output);
     this.input = this.prepareInputFilePath(input);
     this.output = this.prepareOutputFilePath(input, output);
     this.grabSize = grabSize;
+
+    this.fetchRowDataByInn = this.fetchRowDataByInn.bind(this);
   }
 
   /**
@@ -41,14 +56,12 @@ export class BizGrabber {
     for (let i = 0; i < INNs.length; i += this.grabSize) {
       const chunkIds = INNs.slice(i, i + this.grabSize);
 
-      const promises = chunkIds.map((inn) =>
-        withRetryRequest(this.fetchOrganizationDataByInn)(inn),
-      );
+      const promises = chunkIds.map((inn) => withRetryRequest(this.fetchRowDataByInn)(inn));
 
       const rows = await Promise.all(promises);
 
       rows.forEach((r) => {
-        table.addRow([r.name, r.inn, r.status]);
+        table.addRow([r.name, r.inn, r.status, r.emails, r.phones, r.address, r.okved]);
       });
 
       process.tick();
@@ -83,40 +96,54 @@ export class BizGrabber {
     return INNs;
   }
 
-  private async fetchOrganizationDataByInn(
-    inn: string,
-  ): Promise<{ name: string; inn: string; status: string }> {
-    const data = await dadataApi.suggest.party({ query: inn });
+  private async fetchRowDataByInn(inn: string): Promise<IRowData> {
+    const data = await dadataApi.find.party({ query: inn });
 
     if (!data.length) {
-      return { name: 'no data', inn, status: 'no data' };
+      return {
+        name: NO_DATA,
+        inn,
+        status: NO_DATA,
+        emails: NO_DATA,
+        phones: NO_DATA,
+        address: NO_DATA,
+        okved: NO_DATA,
+      };
     }
 
     if (data.length === 1) {
       const d = data[0];
-      return {
-        name: d.data.name.short_with_opf,
-        inn,
-        status: d.data.state.status,
-      };
+      return this.adaptOrganizationData(d);
     }
 
     /** Для ИП может выдать несколько данных, т.к. при повторном закрытии/открытии ИНН остаётся прежний. */
     const d = data.find((d) => d.data.state.status === 'ACTIVE');
     if (d) {
-      return {
-        name: d.data.name.short_with_opf,
-        inn,
-        status: d.data.state.status,
-      };
+      return this.adaptOrganizationData(d);
     } else {
       const d = data[0];
-      return {
-        name: d.data.name.short_with_opf,
-        inn,
-        status: d.data.state.status,
-      };
+      return this.adaptOrganizationData(d);
     }
+  }
+
+  private adaptOrganizationData(data: IFullOrganizationItem): IRowData {
+    const { data: d } = data;
+
+    return {
+      name: d.name.short_with_opf || d.name.full_with_opf,
+      inn: d.inn,
+      status: d.state.status,
+      emails:
+        d.emails?.length ?
+          d.emails.map((e) => e.data?.source || e.value || NO_DATA).join(', ')
+        : NO_DATA,
+      phones:
+        d.phones?.length ?
+          d.phones.map((p) => p.data?.source || p.value || NO_DATA).join(', ')
+        : NO_DATA,
+      address: (d.address?.data?.source as string) || d.address?.value || NO_DATA,
+      okved: d.okved || NO_DATA,
+    };
   }
 
   private useResultTable() {
@@ -127,7 +154,15 @@ export class BizGrabber {
       name: tableName,
       ref: 'A1',
       headerRow: true,
-      columns: [{ name: 'CompanyName' }, { name: 'INN' }, { name: 'Status' }],
+      columns: [
+        { name: 'CompanyName' },
+        { name: 'INN' },
+        { name: 'Status' },
+        { name: 'E-mail' },
+        { name: 'Phone' },
+        { name: 'Address' },
+        { name: 'Main OKVED' },
+      ],
       rows: [],
     });
 
@@ -137,8 +172,12 @@ export class BizGrabber {
     };
     worksheet.columns = [
       { width: 40 },
-      { width: 20, style: { alignment: { horizontal: 'right' } } },
-      { width: 20, style: { alignment: { horizontal: 'right' } } },
+      { width: 15, style: { alignment: { horizontal: 'right' } } },
+      { width: 15, style: { alignment: { horizontal: 'center' } } },
+      { width: 30, style: { alignment: { horizontal: 'left' } } },
+      { width: 20, style: { alignment: { horizontal: 'left' } } },
+      { width: 70, style: { alignment: { horizontal: 'left' } } },
+      { width: 12, style: { alignment: { horizontal: 'right' } } },
     ];
 
     const table = worksheet.getTable(tableName);
@@ -163,10 +202,7 @@ export class BizGrabber {
   private prepareOutputFilePath(input: string, output: string) {
     const inputFile = this.getFirstXlsxFile(input);
 
-    const currentDate = new Date()
-      .toISOString()
-      .slice(0, 10)
-      .replace(/-/g, '-');
+    const currentDate = new Date().toISOString().slice(0, 10).replace(/-/g, '-');
 
     const newFileName = `biz-grabber_${currentDate}_${inputFile.name}`;
 
@@ -203,14 +239,11 @@ export class BizGrabber {
     console.log(`Grab size        : ${this.grabSize}`);
     console.log(`Total grabs      : ${total}`);
 
-    return new ProgressBar(
-      `Grabbing process : [:bar] :current/:total :percent :etas :elapseds`,
-      {
-        complete: '=',
-        incomplete: '-',
-        width: 30,
-        total,
-      },
-    );
+    return new ProgressBar(`Grabbing process : [:bar] :current/:total :percent :etas :elapseds`, {
+      complete: '=',
+      incomplete: '-',
+      width: 30,
+      total,
+    });
   }
 }

@@ -20,11 +20,10 @@ const find = {
     async party(params) {
         try {
             const { data } = await httpClient_1.httpClient.post(FIND_URL.href, params);
-            return data.suggestions?.[0] || null;
+            return data.suggestions || [];
         }
-        catch (error) {
-            console.error(error);
-            return null;
+        catch (e) {
+            throw new Error(e);
         }
     },
 };

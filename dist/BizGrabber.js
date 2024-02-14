@@ -33,15 +33,17 @@ const path_1 = __importDefault(require("path"));
 const progress_1 = __importDefault(require("progress"));
 const api_1 = require("./api");
 const withRetryRequest_1 = require("./lib/withRetryRequest");
+const NO_DATA = 'no data';
 class BizGrabber {
     input;
     output;
     grabSize;
-    constructor(input, output, grabSize = 100) {
+    constructor(input, output, grabSize = 30) {
         this.prepareOutputFolder(output);
         this.input = this.prepareInputFilePath(input);
         this.output = this.prepareOutputFilePath(input, output);
         this.grabSize = grabSize;
+        this.fetchRowDataByInn = this.fetchRowDataByInn.bind(this);
     }
     static async grab(input, output, grabSize) {
         const grabber = new this(input, output, grabSize);
@@ -53,10 +55,10 @@ class BizGrabber {
         const { table, onDataInserted } = this.useResultTable();
         for (let i = 0; i < INNs.length; i += this.grabSize) {
             const chunkIds = INNs.slice(i, i + this.grabSize);
-            const promises = chunkIds.map((inn) => (0, withRetryRequest_1.withRetryRequest)(this.fetchOrganizationDataByInn)(inn));
+            const promises = chunkIds.map((inn) => (0, withRetryRequest_1.withRetryRequest)(this.fetchRowDataByInn)(inn));
             const rows = await Promise.all(promises);
             rows.forEach((r) => {
-                table.addRow([r.name, r.inn, r.status]);
+                table.addRow([r.name, r.inn, r.status, r.emails, r.phones, r.address, r.okved]);
             });
             process.tick();
         }
@@ -82,35 +84,47 @@ class BizGrabber {
         });
         return INNs;
     }
-    async fetchOrganizationDataByInn(inn) {
-        const data = await api_1.dadataApi.suggest.party({ query: inn });
+    async fetchRowDataByInn(inn) {
+        const data = await api_1.dadataApi.find.party({ query: inn });
         if (!data.length) {
-            return { name: 'no data', inn, status: 'no data' };
+            return {
+                name: NO_DATA,
+                inn,
+                status: NO_DATA,
+                emails: NO_DATA,
+                phones: NO_DATA,
+                address: NO_DATA,
+                okved: NO_DATA,
+            };
         }
         if (data.length === 1) {
             const d = data[0];
-            return {
-                name: d.data.name.short_with_opf,
-                inn,
-                status: d.data.state.status,
-            };
+            return this.adaptOrganizationData(d);
         }
         const d = data.find((d) => d.data.state.status === 'ACTIVE');
         if (d) {
-            return {
-                name: d.data.name.short_with_opf,
-                inn,
-                status: d.data.state.status,
-            };
+            return this.adaptOrganizationData(d);
         }
         else {
             const d = data[0];
-            return {
-                name: d.data.name.short_with_opf,
-                inn,
-                status: d.data.state.status,
-            };
+            return this.adaptOrganizationData(d);
         }
+    }
+    adaptOrganizationData(data) {
+        const { data: d } = data;
+        return {
+            name: d.name.short_with_opf || d.name.full_with_opf,
+            inn: d.inn,
+            status: d.state.status,
+            emails: d.emails?.length ?
+                d.emails.map((e) => e.data?.source || e.value || NO_DATA).join(', ')
+                : NO_DATA,
+            phones: d.phones?.length ?
+                d.phones.map((p) => p.data?.source || p.value || NO_DATA).join(', ')
+                : NO_DATA,
+            address: d.address?.data?.source || d.address?.value || NO_DATA,
+            okved: d.okved || NO_DATA,
+        };
     }
     useResultTable() {
         const tableName = 'BizGrabber';
@@ -120,7 +134,15 @@ class BizGrabber {
             name: tableName,
             ref: 'A1',
             headerRow: true,
-            columns: [{ name: 'CompanyName' }, { name: 'INN' }, { name: 'Status' }],
+            columns: [
+                { name: 'CompanyName' },
+                { name: 'INN' },
+                { name: 'Status' },
+                { name: 'E-mail' },
+                { name: 'Phone' },
+                { name: 'Address' },
+                { name: 'Main OKVED' },
+            ],
             rows: [],
         });
         worksheet.getRow(1).alignment = {
@@ -129,8 +151,12 @@ class BizGrabber {
         };
         worksheet.columns = [
             { width: 40 },
-            { width: 20, style: { alignment: { horizontal: 'right' } } },
-            { width: 20, style: { alignment: { horizontal: 'right' } } },
+            { width: 15, style: { alignment: { horizontal: 'right' } } },
+            { width: 15, style: { alignment: { horizontal: 'center' } } },
+            { width: 30, style: { alignment: { horizontal: 'left' } } },
+            { width: 20, style: { alignment: { horizontal: 'left' } } },
+            { width: 70, style: { alignment: { horizontal: 'left' } } },
+            { width: 12, style: { alignment: { horizontal: 'right' } } },
         ];
         const table = worksheet.getTable(tableName);
         const onDataInserted = async () => {
@@ -148,10 +174,7 @@ class BizGrabber {
     }
     prepareOutputFilePath(input, output) {
         const inputFile = this.getFirstXlsxFile(input);
-        const currentDate = new Date()
-            .toISOString()
-            .slice(0, 10)
-            .replace(/-/g, '-');
+        const currentDate = new Date().toISOString().slice(0, 10).replace(/-/g, '-');
         const newFileName = `biz-grabber_${currentDate}_${inputFile.name}`;
         return path_1.default.resolve(output, newFileName);
     }

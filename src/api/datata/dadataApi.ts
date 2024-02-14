@@ -38,19 +38,16 @@ const find = {
    */
   async party(
     params: IFindOrganizationParams,
-  ): Promise<IFullOrganizationItem | null> {
+  ): Promise<IFullOrganizationItem[]> {
     try {
       const { data } = await httpClient.post<IFullOrganizationSuggestions>(
         FIND_URL.href,
         params,
       );
 
-      /** Возвращаем `null`, при неудачном запросе */
-      return data.suggestions?.[0] || null;
-    } catch (error) {
-      console.error(error);
-      /** Возвращаем `null`, при неудачном запросе */
-      return null;
+      return data.suggestions || [];
+    } catch (e) {
+      throw new Error(e as unknown as string);
     }
   },
 };
