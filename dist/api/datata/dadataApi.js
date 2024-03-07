@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.dadataApi = void 0;
 const httpClient_1 = require("../httpClient");
-const SERVICE_URL = new URL(process.env.DADATA);
+const SERVICE_URL = new URL('v1/', process.env.DADATA);
 const SUGGEST_URL = new URL('suggest/party/', SERVICE_URL);
 const FIND_URL = new URL('find/party/', SERVICE_URL);
 const suggest = {
