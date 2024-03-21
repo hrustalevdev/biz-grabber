@@ -58,7 +58,21 @@ class BizGrabber {
             const promises = chunkIds.map((inn) => (0, withRetryRequest_1.withRetryRequest)(this.fetchRowDataByInn)(inn));
             const rows = await Promise.all(promises);
             rows.forEach((r) => {
-                table.addRow([r.name, r.inn, r.status, r.emails, r.phones, r.address, r.okved]);
+                table.addRow([
+                    r.name,
+                    r.inn,
+                    r.status,
+                    r.emails,
+                    r.phones,
+                    r.address,
+                    r.okved,
+                    r.financeYear,
+                    r.financeIncome,
+                    r.financeRevenue,
+                    r.financeExpense,
+                    r.financeDebt,
+                    r.financePenalty,
+                ]);
             });
             process.tick();
         }
@@ -95,6 +109,12 @@ class BizGrabber {
                 phones: NO_DATA,
                 address: NO_DATA,
                 okved: NO_DATA,
+                financeYear: NO_DATA,
+                financeIncome: NO_DATA,
+                financeRevenue: NO_DATA,
+                financeExpense: NO_DATA,
+                financeDebt: NO_DATA,
+                financePenalty: NO_DATA,
             };
         }
         if (data.length === 1) {
@@ -124,6 +144,12 @@ class BizGrabber {
                 : NO_DATA,
             address: d.address?.data?.source || d.address?.value || NO_DATA,
             okved: d.okved || NO_DATA,
+            financeYear: d.finance?.year ? String(d.finance.year) : NO_DATA,
+            financeIncome: d.finance?.income ? String(d.finance.income) : NO_DATA,
+            financeRevenue: d.finance?.revenue ? String(d.finance.revenue) : NO_DATA,
+            financeExpense: d.finance?.expense ? String(d.finance.expense) : NO_DATA,
+            financeDebt: d.finance?.debt ? String(d.finance.debt) : NO_DATA,
+            financePenalty: d.finance?.penalty ? String(d.finance.penalty) : NO_DATA,
         };
     }
     useResultTable() {
@@ -142,6 +168,12 @@ class BizGrabber {
                 { name: 'Phone' },
                 { name: 'Address' },
                 { name: 'Main OKVED' },
+                { name: 'Finance year' },
+                { name: 'Finance income' },
+                { name: 'Finance revenue' },
+                { name: 'Finance expense' },
+                { name: 'Finance debt' },
+                { name: 'Finance penalty' },
             ],
             rows: [],
         });
@@ -157,6 +189,12 @@ class BizGrabber {
             { width: 20, style: { alignment: { horizontal: 'left' } } },
             { width: 70, style: { alignment: { horizontal: 'left' } } },
             { width: 12, style: { alignment: { horizontal: 'right' } } },
+            { width: 20, style: { alignment: { horizontal: 'right' } } },
+            { width: 20, style: { alignment: { horizontal: 'right' } } },
+            { width: 20, style: { alignment: { horizontal: 'right' } } },
+            { width: 20, style: { alignment: { horizontal: 'right' } } },
+            { width: 20, style: { alignment: { horizontal: 'right' } } },
+            { width: 20, style: { alignment: { horizontal: 'right' } } },
         ];
         const table = worksheet.getTable(tableName);
         const onDataInserted = async () => {

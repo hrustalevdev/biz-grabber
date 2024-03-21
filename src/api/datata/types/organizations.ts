@@ -124,6 +124,8 @@ interface IFullOrganizationData extends IBaseOrganizationData {
     year: number;
     /** Доходы по бух. отчётности */
     income: number;
+    /** Выручка по бух. отчётности */
+    revenue: number;
     /** Расходы по бух. отчётности */
     expense: number;
     /** Недоимки по налогам */
