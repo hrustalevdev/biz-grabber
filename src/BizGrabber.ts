@@ -235,8 +235,8 @@ export class BizGrabber {
       { width: 20, style: { alignment: { horizontal: 'right' } } },
       { width: 20, style: { alignment: { horizontal: 'right' } } },
       { width: 20, style: { alignment: { horizontal: 'right' } } },
-      { width: 10, style: { alignment: { horizontal: 'right' } } },
-      { width: 10, style: { alignment: { horizontal: 'right' } } },
+      { width: 12, style: { alignment: { horizontal: 'right' } } },
+      { width: 12, style: { alignment: { horizontal: 'right' } } },
     ];
 
     const table = worksheet.getTable(tableName);
