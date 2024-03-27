@@ -72,6 +72,8 @@ class BizGrabber {
                     r.financeExpense,
                     r.financeDebt,
                     r.financePenalty,
+                    r.smbCategory,
+                    r.smbIssueDate,
                 ]);
             });
             process.tick();
@@ -115,6 +117,8 @@ class BizGrabber {
                 financeExpense: NO_DATA,
                 financeDebt: NO_DATA,
                 financePenalty: NO_DATA,
+                smbCategory: NO_DATA,
+                smbIssueDate: NO_DATA,
             };
         }
         if (data.length === 1) {
@@ -150,6 +154,10 @@ class BizGrabber {
             financeExpense: d.finance?.expense ? String(d.finance.expense) : NO_DATA,
             financeDebt: d.finance?.debt ? String(d.finance.debt) : NO_DATA,
             financePenalty: d.finance?.penalty ? String(d.finance.penalty) : NO_DATA,
+            smbCategory: d.documents?.smb?.category || NO_DATA,
+            smbIssueDate: d.documents?.smb?.issue_date ?
+                new Date(d.documents.smb.issue_date).toLocaleDateString()
+                : NO_DATA,
         };
     }
     useResultTable() {
@@ -174,6 +182,8 @@ class BizGrabber {
                 { name: 'Finance expense' },
                 { name: 'Finance debt' },
                 { name: 'Finance penalty' },
+                { name: 'SMB category' },
+                { name: 'SMB issue date' },
             ],
             rows: [],
         });
@@ -195,6 +205,8 @@ class BizGrabber {
             { width: 20, style: { alignment: { horizontal: 'right' } } },
             { width: 20, style: { alignment: { horizontal: 'right' } } },
             { width: 20, style: { alignment: { horizontal: 'right' } } },
+            { width: 10, style: { alignment: { horizontal: 'right' } } },
+            { width: 10, style: { alignment: { horizontal: 'right' } } },
         ];
         const table = worksheet.getTable(tableName);
         const onDataInserted = async () => {
