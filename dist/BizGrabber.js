@@ -38,15 +38,18 @@ class BizGrabber {
     input;
     output;
     grabSize;
-    constructor(input, output, grabSize = 30) {
+    viaVpn;
+    constructor(input, output, grabSize = 30, viaVpn = true) {
         this.prepareOutputFolder(output);
         this.input = this.prepareInputFilePath(input);
         this.output = this.prepareOutputFilePath(input, output);
         this.grabSize = grabSize;
+        this.viaVpn = viaVpn;
         this.fetchRowDataByInn = this.fetchRowDataByInn.bind(this);
     }
-    static async grab(input, output, grabSize) {
-        const grabber = new this(input, output, grabSize);
+    static async grab(params) {
+        const { input, output, grabSize, viaVpn } = params;
+        const grabber = new this(input, output, grabSize, viaVpn);
         await grabber.grab();
     }
     async grab() {
@@ -101,7 +104,7 @@ class BizGrabber {
         return INNs;
     }
     async fetchRowDataByInn(inn) {
-        const data = await api_1.dadataApi.find.party({ query: inn });
+        const data = await api_1.dadataApi.find.party({ query: inn }, this.viaVpn);
         if (!data.length) {
             return {
                 name: NO_DATA,

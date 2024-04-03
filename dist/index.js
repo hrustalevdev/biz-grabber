@@ -13,5 +13,5 @@ const input = env_1.isTesting ?
 const output = env_1.isTesting ?
     path_1.default.resolve(__dirname, '..', 'output', 'test')
     : path_1.default.resolve(__dirname, '..', 'output');
-BizGrabber_1.BizGrabber.grab(input, output, env_1.grabSize);
+BizGrabber_1.BizGrabber.grab({ input, output, grabSize: env_1.grabSize, viaVpn: env_1.viaVpn });
 //# sourceMappingURL=index.js.map

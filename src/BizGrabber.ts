@@ -25,34 +25,44 @@ interface IRowData {
   smbIssueDate: string;
 }
 
+interface IGrabParams {
+  /** Путь к папке с исходными данными */
+  input: string;
+  /** Путь к папке с результатом */
+  output: string;
+  /** Количество одновременных запросов */
+  grabSize?: number;
+  /** Используется под VPN или нет */
+  viaVpn?: boolean;
+}
+
 const NO_DATA = 'no data';
 
 export class BizGrabber {
   private readonly input: string;
   private readonly output: string;
   private readonly grabSize: number;
+  private readonly viaVpn: boolean;
 
   /**
    * @param input - путь к папке с исходными данными
    * @param output - путь к папке с результатом
    * @param grabSize - количество одновременных запросов
+   * @param viaVpn - используется под VPN или нет
    */
-  constructor(input: string, output: string, grabSize = 30) {
+  constructor(input: string, output: string, grabSize = 30, viaVpn = true) {
     this.prepareOutputFolder(output);
     this.input = this.prepareInputFilePath(input);
     this.output = this.prepareOutputFilePath(input, output);
     this.grabSize = grabSize;
+    this.viaVpn = viaVpn;
 
     this.fetchRowDataByInn = this.fetchRowDataByInn.bind(this);
   }
 
-  /**
-   * @param input - путь к папке с исходными данными
-   * @param output - путь к папке с результатом
-   * @param grabSize - количество одновременных запросов
-   */
-  static async grab(input: string, output: string, grabSize?: number) {
-    const grabber = new this(input, output, grabSize);
+  static async grab(params: IGrabParams) {
+    const { input, output, grabSize, viaVpn } = params;
+    const grabber = new this(input, output, grabSize, viaVpn);
     await grabber.grab();
   }
 
@@ -121,7 +131,7 @@ export class BizGrabber {
   }
 
   private async fetchRowDataByInn(inn: string): Promise<IRowData> {
-    const data = await dadataApi.find.party({ query: inn });
+    const data = await dadataApi.find.party({ query: inn }, this.viaVpn);
 
     if (!data.length) {
       return {
