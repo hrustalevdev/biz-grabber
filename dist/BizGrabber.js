@@ -64,6 +64,12 @@ class BizGrabber {
                 table.addRow([
                     r.name,
                     r.inn,
+                    r.kpp,
+                    r.ogrn,
+                    r.opf,
+                    r.registrationDate,
+                    r.liquidationDate,
+                    r.capitalValue,
                     r.status,
                     r.emails,
                     r.phones,
@@ -109,6 +115,12 @@ class BizGrabber {
             return {
                 name: NO_DATA,
                 inn,
+                kpp: NO_DATA,
+                ogrn: NO_DATA,
+                opf: NO_DATA,
+                registrationDate: NO_DATA,
+                liquidationDate: NO_DATA,
+                capitalValue: NO_DATA,
                 status: NO_DATA,
                 emails: NO_DATA,
                 phones: NO_DATA,
@@ -139,9 +151,17 @@ class BizGrabber {
     }
     adaptOrganizationData(data) {
         const { data: d } = data;
+        const regTS = d.ogrn_date || d.state.registration_date;
+        const liqTS = d.state.liquidation_date;
         return {
             name: d.name.short_with_opf || d.name.full_with_opf,
             inn: d.inn,
+            kpp: d.kpp,
+            ogrn: d.ogrn,
+            opf: d.opf.short || d.opf.full || NO_DATA,
+            registrationDate: regTS ? new Date(regTS).toLocaleDateString() : NO_DATA,
+            liquidationDate: liqTS ? new Date(liqTS).toLocaleDateString() : NO_DATA,
+            capitalValue: String(d.capital?.value || NO_DATA),
             status: d.state.status,
             emails: d.emails?.length ?
                 d.emails.map((e) => e.data?.source || e.value || NO_DATA).join(', ')
@@ -174,6 +194,12 @@ class BizGrabber {
             columns: [
                 { name: 'CompanyName' },
                 { name: 'INN' },
+                { name: 'KPP' },
+                { name: 'OGRN' },
+                { name: 'OPF' },
+                { name: 'Registration date' },
+                { name: 'Liquidation date' },
+                { name: 'Capital value' },
                 { name: 'Status' },
                 { name: 'E-mail' },
                 { name: 'Phone' },
@@ -196,6 +222,12 @@ class BizGrabber {
         };
         worksheet.columns = [
             { width: 40 },
+            { width: 15, style: { alignment: { horizontal: 'right' } } },
+            { width: 15, style: { alignment: { horizontal: 'right' } } },
+            { width: 15, style: { alignment: { horizontal: 'right' } } },
+            { width: 15, style: { alignment: { horizontal: 'right' } } },
+            { width: 15, style: { alignment: { horizontal: 'right' } } },
+            { width: 15, style: { alignment: { horizontal: 'right' } } },
             { width: 15, style: { alignment: { horizontal: 'right' } } },
             { width: 15, style: { alignment: { horizontal: 'center' } } },
             { width: 30, style: { alignment: { horizontal: 'left' } } },
