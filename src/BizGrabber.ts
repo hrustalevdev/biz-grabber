@@ -198,8 +198,8 @@ export class BizGrabber {
       kpp: d.kpp,
       ogrn: d.ogrn,
       opf: d.opf.short || d.opf.full || NO_DATA,
-      registrationDate: regTS ? new Date(regTS).toLocaleDateString() : NO_DATA,
-      liquidationDate: liqTS ? new Date(liqTS).toLocaleDateString() : NO_DATA,
+      registrationDate: regTS ? new Date(regTS).toLocaleDateString('ru-RU') : NO_DATA,
+      liquidationDate: liqTS ? new Date(liqTS).toLocaleDateString('ru-RU') : NO_DATA,
       capitalValue: String(d.capital?.value || NO_DATA),
       status: d.state.status,
       emails:
