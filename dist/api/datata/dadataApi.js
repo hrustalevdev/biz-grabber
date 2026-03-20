@@ -27,6 +27,12 @@ const find = {
             throw new Error(e);
         }
     },
+    async rawParty(params, viaVpn = true) {
+        const SERVICE_URL = getServiceUrl(viaVpn);
+        const FIND_URL = new URL('find/party/', SERVICE_URL);
+        const { data } = await httpClient_1.httpClient.post(FIND_URL.href, params);
+        return data;
+    },
 };
 exports.dadataApi = { suggest, find };
 function getServiceUrl(viaVpn) {

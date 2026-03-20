@@ -47,6 +47,17 @@ const find = {
       throw new Error(e as unknown as string);
     }
   },
+
+  async rawParty(
+    params: IFindOrganizationParams,
+    viaVpn = true,
+  ): Promise<IFullOrganizationSuggestions> {
+    const SERVICE_URL = getServiceUrl(viaVpn);
+    const FIND_URL = new URL('find/party/', SERVICE_URL);
+
+    const { data } = await httpClient.post<IFullOrganizationSuggestions>(FIND_URL.href, params);
+    return data;
+  },
 };
 
 export const dadataApi = { suggest, find };
