@@ -2,6 +2,7 @@ import 'dotenv/config';
 import path from 'path';
 
 import { BizGrabber } from './BizGrabber';
+import { BizGrabToJson } from './BizGrabToJson';
 import { isTesting, grabSize, viaVpn } from './lib/env';
 
 const input =
@@ -14,4 +15,5 @@ const output =
     path.resolve(__dirname, '..', 'output', 'test')
   : path.resolve(__dirname, '..', 'output');
 
-BizGrabber.grab({ input, output, grabSize, viaVpn });
+// BizGrabber.grab({ input, output, grabSize, viaVpn });
+BizGrabToJson.grab({ input, output, grabSize, viaVpn });
